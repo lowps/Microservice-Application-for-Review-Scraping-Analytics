@@ -32,7 +32,7 @@ venv/
 .venv/
 env/
 *.parquet
-data/
+
 *.csv
 
 # User-specific files (MonoDevelop/Xamarin Studio)
