@@ -1,0 +1,149 @@
+services:
+  django_gunicorn:
+    container_name: henesys
+    build:
+      context: ..
+      dockerfile: i_app/Dockerfile
+    image: henesys
+    ports:
+      - "8000:8000"  
+    volumes:
+      - static:/app/static
+    env_file:
+      - .env.prod #for DJANGO Enviornment variables setup. Injects all the variables defined in .env file as system-wide environment variables into the container
+    depends_on:
+      - postgres
+  
+  postgres:
+    container_name: postgres
+    build:
+      context: ../vi_postgres
+      dockerfile: Dockerfile
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.prod.db # seperate python SECRET_KEY and postgres setup
+
+  nginx:
+    container_name: nginx
+    build:
+      context:  ../ii_nginx
+      dockerfile: Dockerfile
+    volumes:
+      - static:/app/static
+    #When you access http://localhost or http://<host-ip> on your host machine, Docker forwards the requests to port 80 inside the container where
+    #NGINX is running
+    ports:
+      - "80:80"
+    depends_on:
+      - django_gunicorn
+
+  prometheus:
+    container_name: prometheus
+    build:
+      context: ../vii_prometheus  
+      dockerfile: Dockerfile.test
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../vii_prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  
+  grafana:
+    build:
+      context: ../viii_grafana
+      dockerfile: Dockerfile
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=your_password #username: admin pw:your_password
+    restart: unless-stopped
+
+  cadvisor:
+    build:
+      context: ../viiii_cadvisor
+      dockerfile: Dockerfile
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  node-exporter:
+    build:
+      context: ../x_nodeExporter
+      dockerfile: Dockerfile
+    container_name: node_exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--collector.filesystem'
+      - '--collector.cpu'
+      - '--collector.diskstats'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc) ($$|/)'
+    ports:
+      - 9100:9100
+
+  # redis:
+  #   build:
+  #     context: ../v_redis
+  #     dockerfile: Dockerfile
+  #   container_name: redis
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+    
+
+  # celery:
+  #   image: my-app-image
+  #   container_name: celery
+  #   command: celery -A app worker --beat -E -l info
+  #   volumes:
+  #     - static:/app/static
+  #   env_file:
+  #     - .env.prod
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - django_gunicorn
+  
+  # flower:
+  #   image: my-app-image
+  #   container_name: flower
+  #   command: celery -A app flower --basic_auth=admin:password123
+  #   ports:
+  #     - "5555:5555"
+  #   env_file:
+  #     - .env.prod
+  #   depends_on:
+  #     - redis
+
+  # beat:
+  #   image: my-app-image
+  #   container_name: beat
+  #   command: celery -A app beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  #   volumes:
+  #     - static:/app/static
+  #   env_file:
+  #     - .env.prod
+  #   depends_on:
+  #     - redis
+  #     - django_gunicorn
+
+
+#persist data beyond the life of container via volume
+volumes:
+  static:
+  postgres_data:
+  redis_data:
+

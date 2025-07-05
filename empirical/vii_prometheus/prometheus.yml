@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:  ['prometheus:9090'] #Prometheus self-scraping #self-monitoring
+
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080'] #All Docker Containers
+      #This is a special DNS name in Docker for Mac (and Windows) that allows 
+      #containers to access services running on the host (your MacBook). Im running cadvisor
+      #and port mapping (binding) it to the host via ports: 8080:8080 thus
+      #'host.docker.internal:8080' allows Prometheus container talk to cAdvisor on the host machine.
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node_exporter:9100'] #MACBOOKPRO (host hardware)
+
+
+
+      

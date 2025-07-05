@@ -1,0 +1,13 @@
+# Ignore these
+*
+i_app/db.sqlite3
+
+# Whitelist only what we need
+!a_sourceCode/
+!b_utils/
+!c_logs/
+!d_static/
+!e_databaseSchemaStatic/
+!f_data/
+!i_app/
+

@@ -1,0 +1,15 @@
+FROM debian:stable-slim
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    tar \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://github.com/prometheus/prometheus/releases/download/v3.0.1/prometheus-3.0.1.linux-amd64.tar.gz && \
+    tar -xvf prometheus-3.0.1.linux-amd64.tar.gz && \
+    mv prometheus-3.0.1.linux-amd64/prometheus /usr/local/bin/ && \
+    mv prometheus-3.0.1.linux-amd64/promtool /usr/local/bin/ && \
+    rm -rf prometheus-3.0.1.linux-amd64
+
+CMD ["/usr/local/bin/prometheus", "--config.file=/etc/prometheus/prometheus.yml"]
