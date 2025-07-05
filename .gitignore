@@ -34,7 +34,9 @@ env/
 *.parquet
 
 *.csv
-
+!empirical/f_data/raw/starbucks_location_stuart.csv
+!empirical/f_data/processed/starbucks_location_stuart_processed.csv
+!empirical/f_data/final/starbucks_location_stuart_final3.csv
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
